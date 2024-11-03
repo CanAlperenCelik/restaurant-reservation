@@ -3,9 +3,10 @@ import HomePage from "./components/HomePage.vue";
 import ReservationPage from "./components/ReservationPage.vue";
 import ShopView from "./components/ShopView.vue";
 import ErrorPage from "./components/ErrorPage.vue";
-import OrdersAdmin from "./components/OrdersAdmin.vue";
-import AdminDashboard from "./components/AdminDashboard.vue";
-import ReservationAdmin from "./components/ReservationAdmin.vue";
+import OrdersAdmin from "./components/AdminView/OrdersAdmin.vue";
+import AdminDashboard from "./components/AdminView/AdminDashboard.vue";
+import ReservationAdmin from "./components/AdminView/ReservationAdmin.vue";
+import AdminHome from "./components/AdminView/AdminHome.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomePage },
@@ -13,19 +14,15 @@ const routes = [
   { path: "/:guid/menu", name: "Menu", component: ShopView },
   {
     path: "/admin",
-    name: "AdminDashboard", // Route für das Admin-Dashboard
-    component: AdminDashboard,
+    component: AdminDashboard, // Hauptkomponente für Admin-Bereich
     children: [
+      { path: "", name: "AdminHome", component: AdminHome }, // Dies ist die korrekte Route
       {
-        path: "reservations", // Unterseite für Reservierungen
+        path: "reservations",
         name: "ReservationsAdmin",
         component: ReservationAdmin,
       },
-      {
-        path: "orders", // Unterseite für Bestellungen
-        name: "OrdersAdmin",
-        component: OrdersAdmin,
-      },
+      { path: "orders", name: "OrdersAdmin", component: OrdersAdmin },
     ],
   },
   { path: "/error-page", name: "ErrorPage", component: ErrorPage },

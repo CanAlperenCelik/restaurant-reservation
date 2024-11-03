@@ -1,7 +1,7 @@
 <template>
   <div class="reservation-container">
     <h1>Alle Reservierungen</h1>
-
+    <button @click="goBack">Zurück zum Deckblatt</button>
     <table>
       <thead>
         <tr>
@@ -70,6 +70,9 @@ export default {
     this.fetchReservations(); // Beim Laden der Komponente Reservierungen abrufen
   },
   methods: {
+    goBack() {
+      this.$router.push({ name: "AdminHome" }); // Zurück zum Deckblatt
+    },
     async fetchReservations() {
       try {
         const response = await axios.get(

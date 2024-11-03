@@ -77,7 +77,14 @@ export default {
       this.showPassword = !this.showPassword;
     },
     goToAdminView() {
-      this.$router.push({ name: "AdminDashboard" });
+      this.$router
+        .push({ name: "AdminHome" }) // Hier sicherstellen, dass 'AdminHome' existiert
+        .then(() => {
+          console.log("Navigation success");
+        })
+        .catch((err) => {
+          console.error("Navigation error:", err);
+        });
     },
     goToReservation() {
       this.$router.push({ name: "Reservation" });
@@ -86,16 +93,8 @@ export default {
       this.$router.push({ name: "Menu" });
     },
     login() {
-      if (
-        this.loginForm.username === this.fixedUsername &&
-        this.loginForm.password === this.fixedPassword
-      ) {
-        alert(`Welcome, ${this.loginForm.username}!`);
-        this.toggleLoginModal();
-        this.goToAdminView();
-      } else {
-        alert("Incorrect username or password!");
-      }
+      // Dein Login-Code hier...
+      this.goToAdminView(); // Stelle sicher, dass dieser Aufruf nach einem erfolgreichen Login erfolgt
     },
   },
 };

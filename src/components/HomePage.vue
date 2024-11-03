@@ -1,7 +1,6 @@
 <template>
   <div class="page-container">
-    <!-- AdminHeader-Komponente einfügen -->
-    <AdminHeader />
+    <LoginHeader />
 
     <!-- Erste Sektion mit schwarzem Hintergrund -->
     <section class="hero" ref="heroSection">
@@ -24,12 +23,12 @@
 </template>
 
 <script>
-import AdminHeader from "./AdminHeader.vue"; // AdminHeader korrekt importieren
+import LoginHeader from "./LoginHeader.vue";
 
 export default {
   name: "HomePage",
   components: {
-    AdminHeader, // AdminHeader hier registrieren
+    LoginHeader,
   },
   data() {
     return {

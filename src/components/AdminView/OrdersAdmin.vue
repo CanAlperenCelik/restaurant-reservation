@@ -1,7 +1,7 @@
 <template>
   <div class="order-container">
     <h1>Alle Bestellungen</h1>
-
+    <button @click="goBack">Zurück zum Deckblatt</button>
     <table>
       <thead>
         <tr>
@@ -54,6 +54,9 @@ export default {
     this.fetchOrders(); // Bestellungen abrufen, wenn die Komponente geladen wird
   },
   methods: {
+    goBack() {
+      this.$router.push({ name: "AdminHome" }); // Zurück zum Deckblatt
+    },
     async fetchOrders() {
       try {
         const response = await axios.get(
