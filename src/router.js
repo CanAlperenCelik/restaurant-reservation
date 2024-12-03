@@ -7,6 +7,7 @@ import OrdersAdmin from "./components/AdminView/OrdersAdmin.vue";
 import AdminDashboard from "./components/AdminView/AdminDashboard.vue";
 import ReservationAdmin from "./components/AdminView/ReservationAdmin.vue";
 import AdminHome from "./components/AdminView/AdminHome.vue";
+import TableView from "./components/AdminView/TableView.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomePage },
@@ -16,13 +17,18 @@ const routes = [
     path: "/admin",
     component: AdminDashboard, // Hauptkomponente für Admin-Bereich
     children: [
-      { path: "", name: "AdminHome", component: AdminHome }, // Dies ist die korrekte Route
+      { path: "", name: "AdminHome", component: AdminHome },
       {
         path: "reservations",
         name: "ReservationsAdmin",
         component: ReservationAdmin,
       },
       { path: "orders", name: "OrdersAdmin", component: OrdersAdmin },
+      {
+        path: "table-view",
+        name: "TableView",
+        component: TableView,
+      },
     ],
   },
   { path: "/error-page", name: "ErrorPage", component: ErrorPage },

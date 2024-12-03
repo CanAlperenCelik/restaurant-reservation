@@ -8,6 +8,9 @@
         <li>
           <router-link to="/admin/orders">Bestellungen</router-link>
         </li>
+        <li>
+          <router-link to="/admin/table-view">Tischansicht</router-link>
+        </li>
       </ul>
     </nav>
 

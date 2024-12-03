@@ -251,8 +251,9 @@ export default {
 
       axios
         .post(
-          "http://localhost/reservation-api/insert_reservation.php",
+          "http://localhost/reservation-api/reservation/insert_reservation.php",
           reservationData,
+
           { headers: { "Content-Type": "application/json" } }
         )
         .then((response) => {

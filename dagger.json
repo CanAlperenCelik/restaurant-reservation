@@ -1,0 +1,6 @@
+{
+  "name": "restaurant-reservation",
+  "engineVersion": "v0.13.7",
+  "sdk": "typescript",
+  "source": "dagger"
+}

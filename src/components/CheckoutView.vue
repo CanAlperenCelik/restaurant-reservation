@@ -31,6 +31,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   props: {
     cartItems: {
@@ -41,11 +42,11 @@ export default {
       type: Number,
       default: 0,
     },
-    customerGuid: {
+    customerName: {
       type: String,
       required: true,
     },
-    customerName: {
+    customerGuid: {
       type: String,
       required: true,
     },
@@ -53,46 +54,42 @@ export default {
   data() {
     return {
       showThankYouPopup: false,
-      errorMessage: null, // Initialize error message
+      errorMessage: null,
     };
   },
   methods: {
     async placeOrder() {
-      const orderDetails = this.cartItems.map((item) => item.name); // Extract only dish names
       const orderData = {
-        guid: this.customerGuid,
-        name: this.customerName,
-        orderDetails: orderDetails, // Send only dish names
+        reservation_id: this.$route.params.reservation_id, // Pass reservation_id from URL
+        customer_guid: this.customerGuid,
+        customer_name: this.customerName,
+        order_details: this.cartItems.map((item) => item.id), // List of ordered items
         totalPrice: this.totalPrice,
       };
 
       try {
         const response = await axios.post(
-          "http://localhost/reservation-api/save_order.php",
+          "http://localhost/reservation-api/order/save_order.php",
           orderData
         );
-        console.log(response.data); // Log server response
 
         if (response.data.status === "success") {
-          // Bestellung erfolgreich
           this.showThankYouPopup = true;
           setTimeout(() => {
             this.showThankYouPopup = false;
             this.$emit("orderCompleted");
           }, 2000);
         } else {
-          // Show error message if order was not successful
           this.errorMessage = response.data.message || "Unbekannter Fehler.";
         }
       } catch (error) {
         console.error("Fehler beim Bestellen:", error);
         this.errorMessage =
-          "Fehler beim Bestellen. Bitte versuchen Sie es später erneut."; // Set error message
+          "Fehler beim Bestellen. Bitte versuchen Sie es später erneut.";
       }
     },
     continueShopping() {
-      this.$emit("continueShopping"); // Event zum weiteren Einkaufen
-      this.errorMessage = null; // Clear error message when continuing shopping
+      this.$emit("continueShopping");
     },
   },
 };
@@ -157,13 +154,13 @@ button:hover {
 
 .error-popup {
   position: absolute;
-  top: 10px; /* Positioning for the error message */
+  top: 10px; /* Positionierung für die Fehlermeldung */
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 0, 0, 0.8); /* Red background */
+  background-color: rgba(255, 0, 0, 0.8); /* Roter Hintergrund */
   color: white;
   padding: 10px;
   border-radius: 5px;
-  z-index: 1001; /* Make sure it's above other elements */
+  z-index: 1001; /* Sicherstellen, dass es über anderen Elementen angezeigt wird */
 }
 </style>

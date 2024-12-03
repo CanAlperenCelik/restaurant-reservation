@@ -9,16 +9,15 @@
     <div class="shop-content">
       <nav class="category-sidebar">
         <ul>
-          <li><a href="#antipasti">Vorspeisen</a></li>
-          <li><a href="#pizza">Pizza</a></li>
-          <li><a href="#pasta">Pasta</a></li>
-          <li><a href="#dessert">Nachspeisen</a></li>
-          <li><a href="#drinks">Getränke</a></li>
+          <li><a href="#Vorspeise">Vorspeisen</a></li>
+          <li><a href="#Hauptgericht">Hauptspeise</a></li>
+          <li><a href="#Dessert">Dessert</a></li>
+          <li><a href="#Getränk">Getränke</a></li>
         </ul>
       </nav>
 
       <div class="menu-items">
-        <section id="antipasti">
+        <section id="Vorspeise">
           <h2>Vorspeisen</h2>
           <div
             class="item"
@@ -32,11 +31,11 @@
           </div>
         </section>
 
-        <section id="pizza">
-          <h2>Pizza</h2>
+        <section id="Hauptgericht">
+          <h2>Hauptgericht</h2>
           <div
             class="item"
-            v-for="item in filteredItems('Pizza')"
+            v-for="item in filteredItems('Hauptgericht')"
             :key="item.id"
           >
             <h3>{{ item.name }}</h3>
@@ -46,11 +45,11 @@
           </div>
         </section>
 
-        <section id="pasta">
-          <h2>Pasta</h2>
+        <section id="Dessert">
+          <h2>Dessert</h2>
           <div
             class="item"
-            v-for="item in filteredItems('Pasta')"
+            v-for="item in filteredItems('Dessert')"
             :key="item.id"
           >
             <h3>{{ item.name }}</h3>
@@ -60,21 +59,7 @@
           </div>
         </section>
 
-        <section id="dessert">
-          <h2>Nachspeisen</h2>
-          <div
-            class="item"
-            v-for="item in filteredItems('Nachspeise')"
-            :key="item.id"
-          >
-            <h3>{{ item.name }}</h3>
-            <p>{{ item.description }}</p>
-            <p>{{ item.price }} €</p>
-            <button @click="addToCart(item)">In den Warenkorb</button>
-          </div>
-        </section>
-
-        <section id="drinks">
+        <section id="Getränke">
           <h2>Getränke</h2>
           <div
             class="item"
@@ -127,24 +112,25 @@ export default {
     };
   },
   mounted() {
-    this.checkGuidValidity(); // GUID überprüfen
-    this.fetchCustomerName(); // Kundennamen laden
+    this.fetchCustomerInfo(); // Ruft Kundennamen und Informationen ab
     this.fetchMenuItems(); // Speisen aus der Datenbank laden
   },
   methods: {
-    async checkGuidValidity() {
+    // Holt die GUID aus der URL und überprüft sie
+    async fetchCustomerInfo() {
       const guid = this.$route.params.guid; // GUID aus der URL abrufen
       this.customerGuid = guid; // Setze die GUID im Datenobjekt
+
       try {
         const response = await axios.get(
-          `http://localhost/reservation-api/check_guid.php?guid=${guid}`
+          `http://localhost/reservation-api/order/check_guid.php?guid=${guid}`
         );
         if (response.data.status === "success") {
-          this.guidIsValid = true; // GUID ist gültig
-          this.fetchCustomerName(); // Kundennamen laden
+          this.guidIsValid = true;
+          this.fetchCustomerName(); // Kundennamen abrufen
         } else {
-          this.guidIsValid = false; // GUID ist ungültig
-          this.$router.push("/error-page"); // Fehlerseite anzeigen, wenn die GUID ungültig ist
+          this.guidIsValid = false;
+          this.$router.push("/error-page");
         }
       } catch (error) {
         console.error("Fehler beim Überprüfen der GUID:", error);
@@ -153,15 +139,18 @@ export default {
         this.loading = false;
       }
     },
+
+    // Holt den Kundennamen mit der GUID
     async fetchCustomerName() {
-      if (!this.guidIsValid) return; // Stelle sicher, dass die GUID gültig ist
-      const guid = this.customerGuid; // Verwende die gesetzte GUID
+      if (!this.guidIsValid) return;
+      const guid = this.customerGuid;
+
       try {
         const response = await axios.get(
-          `http://localhost/reservation-api/get_customer_name.php?guid=${guid}` // GUID an API senden
+          `http://localhost/reservation-api/order/get_customer_name.php?guid=${guid}`
         );
         if (response.data.status === "success") {
-          this.customerName = response.data.name; // Kundennamen speichern
+          this.customerName = response.data.name;
         } else {
           console.error(
             "Fehler beim Laden des Kundennamens:",
@@ -172,13 +161,15 @@ export default {
         console.error("Fehler beim Laden des Kundennamens:", error);
       }
     },
+
+    // Holt die Speisen aus der Datenbank
     async fetchMenuItems() {
       try {
         const response = await axios.get(
-          "http://localhost/reservation-api/get_menu_items.php"
+          "http://localhost/reservation-api/order/get_menu_items.php"
         );
         if (response.data.status === "success") {
-          this.menuItems = response.data.items; // Speichern der geladenen Speisen
+          this.menuItems = response.data.items;
         } else {
           console.error(
             "Fehler beim Laden der Speisen:",
@@ -189,45 +180,56 @@ export default {
         console.error("Fehler beim Laden der Speisen:", error);
       }
     },
+
+    // Filtert die Speisen basierend auf der Kategorie
     filteredItems(category) {
       return this.menuItems.filter((item) => item.category === category);
     },
+
+    // Fügt einen Artikel zum Warenkorb hinzu
     addToCart(item) {
       this.cartItems.push(item);
-      this.totalPrice += parseFloat(item.price); // totalPrice als Zahl aktualisieren
+      this.totalPrice += parseFloat(item.price);
     },
+
+    // Bestellvorgang abschließen
     handleOrderCompletion() {
-      // Warenkorb leeren und zurück zur Hauptseite
       this.cartItems = [];
       this.totalPrice = 0;
       this.showCheckout = false;
     },
+
+    // Checkout Fenster schließen und zurück zum Shop
     handleContinueShopping() {
-      this.showCheckout = false; // Checkout-Fenster schließen
+      this.showCheckout = false;
     },
+
+    // Bestellen - Daten an die API senden
     async placeOrder() {
       const orderData = {
         guid: this.customerGuid,
-        name: this.customerName,
-        orderDetails: this.cartItems.map((item) => item.id), // Hier nur die Gerichts-IDs übergeben
+        name: this.customerName, // Kundennamen
+        orderDetails: this.cartItems.map((item) => item.id), // IDs der bestellten Gerichte
         totalPrice: this.totalPrice,
       };
 
       try {
         const response = await axios.post(
-          "http://localhost/reservation-api/save_order.php",
+          "http://localhost/reservation-api/order/save_order.php",
           orderData
         );
         if (response.data.status === "success") {
-          this.handleOrderCompletion(); // Bestellung erfolgreich, Warenkorb leeren
+          this.handleOrderCompletion();
         } else {
           console.error(
             "Fehler beim Speichern der Bestellung:",
             response.data.message
           );
+          alert("Fehler beim Speichern der Bestellung");
         }
       } catch (error) {
-        console.error("Fehler beim Speichern der Bestellung:", error);
+        console.error("Fehler beim Bestellvorgang:", error);
+        alert("Fehler beim Bestellen. Bitte versuchen Sie es später erneut.");
       }
     },
   },
@@ -235,6 +237,7 @@ export default {
 </script>
 
 <style scoped>
+/* Stil für den Shop */
 .shop-container {
   display: flex;
 }
@@ -278,9 +281,5 @@ button {
   color: white;
   border: none;
   cursor: pointer;
-}
-
-button:hover {
-  background-color: #c0392b;
 }
 </style>

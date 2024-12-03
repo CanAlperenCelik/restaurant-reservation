@@ -60,7 +60,7 @@ export default {
     async fetchOrders() {
       try {
         const response = await axios.get(
-          "http://localhost/reservation-api/get_orders.php"
+          "http://localhost/reservation-api/order/get_orders.php"
         );
         if (response.data.status === "success") {
           this.orders = response.data.orders;

@@ -5,6 +5,7 @@
     <div class="button-container">
       <button @click="goTo('ReservationsAdmin')">Reservierungen</button>
       <button @click="goTo('OrdersAdmin')">Bestellungen</button>
+      <button @click="goTo('TableView')">Tischansicht</button>
     </div>
     <router-view></router-view>
   </div>
