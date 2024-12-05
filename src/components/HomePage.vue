@@ -1,7 +1,6 @@
 <template>
   <div class="page-container">
     <LoginHeader />
-
     <!-- Hero-Bereich mit Video -->
     <section class="hero" ref="heroSection">
       <!-- Video-Hintergrund -->
@@ -51,7 +50,7 @@
           </p>
           <div class="button-container">
             <button @click="goToMenu">Zur Speisekarte</button>
-            <button @click="goToDessert">Zur Dessert Karte</button>
+            <button @click="goToReservation">Jetzt Reservieren!</button>
           </div>
         </div>
 
@@ -70,6 +69,13 @@
         </div>
       </div>
     </section>
+    <selection class="reservation-selection">
+      <ReservationPage />
+    </selection>
+    <selection class="review-selection">
+      <ReviewSlider />
+    </selection>
+    <FooterMain />
   </div>
 </template>
 
@@ -77,11 +83,16 @@
 import LoginHeader from "./LoginHeader.vue";
 import pizzaVideo from "../assets/Pizza.mp4";
 import pastaVideo from "../assets/Pasta.mp4";
-
+import FooterMain from "./FooterMain.vue";
+import ReservationPage from "./ReservationPage.vue";
+import ReviewSlider from "./ReviewSlider.vue";
 export default {
   name: "HomePage",
   components: {
     LoginHeader,
+    FooterMain,
+    ReservationPage,
+    ReviewSlider,
   },
   data() {
     return {
@@ -175,20 +186,23 @@ export default {
 .hero button {
   margin-top: 20px;
   padding: 10px 20px;
+  background: none;
+  border: 1px solid #e3b23c;
+  color: #e3b23c;
   font-size: 1rem;
-  color: white;
-  background: #e74c3c;
-  border: none;
   cursor: pointer;
-  transition: background 0.3s;
+  margin-right: 10px;
+  transition: all 0.3s ease;
 }
 
 .hero button:hover {
-  background: #c0392b;
+  background: #e3b23c;
+  color: black;
 }
 
 /* Info-Sektion */
 .info-section {
+  margin: 45px auto;
   padding: 50px 20px;
   background: black;
   display: flex;
@@ -250,7 +264,7 @@ export default {
 
 /* Buttons */
 .button-container {
-  margin-top: 20px;
+  margin: 45px auto;
 }
 
 button {

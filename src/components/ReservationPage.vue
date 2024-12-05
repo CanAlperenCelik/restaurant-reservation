@@ -15,16 +15,13 @@
           {{ count }} Personen
         </button>
       </div>
-      <!-- Anzeige der aktuell ausgewählten Personenanzahl -->
-      <p v-if="reservation.personCount">
-        Aktuell ausgewählte Personenanzahl: {{ reservation.personCount }}
-      </p>
     </div>
 
     <!-- Schritt 2: Datum auswählen -->
-    <div>
+    <div v-if="currentStep >= 2">
       <h2>Wählen Sie das Datum:</h2>
       <input
+        style="width: 55%"
         type="date"
         v-model="reservation.date"
         @change="validateDate"
@@ -32,9 +29,6 @@
         :class="{ 'is-invalid-date': isPastDate(reservation.date) }"
         required
       />
-      <p v-if="reservation.date">
-        Aktuell ausgewähltes Datum: {{ reservation.date }}
-      </p>
     </div>
 
     <!-- Schritt 3: Uhrzeit auswählen -->
@@ -48,14 +42,11 @@
       >
         {{ time }}
       </button>
-      <p v-if="reservation.time">
-        Aktuell ausgewählte Uhrzeit: {{ reservation.time }}
-      </p>
     </div>
 
     <!-- Schritt 4: Kontaktinformationen eingeben -->
     <div v-if="currentStep >= 4">
-      <h2>Kontaktinformationen</h2>
+      <h2>Kontaktinformationen:</h2>
       <form @submit.prevent="confirmAndReturn">
         <div class="form-group">
           <div class="form-group">
@@ -276,39 +267,51 @@ export default {
 
 <style scoped>
 .reservation {
-  max-width: 600px;
-  margin: 0 auto;
+  position: relative; /* Damit der Hintergrund auf die .reservation div beschränkt wird */
+  overflow: hidden; /* Verhindert, dass animierte Kreise aus der Box herausragen */
+  max-width: 100%;
+  margin: 45px auto;
   padding: 20px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 136, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0) 80%
+  );
 }
 
 h1 {
   text-align: center;
+  margin: 5px 20px;
+}
+h2 {
+  text-align: center;
+  margin: 20px;
 }
 .person-count-buttons button,
 button {
-  margin: 5px;
-  padding: 10px;
-  font-size: 16px;
-  background-color: #28a745; /* Standard-Hintergrundfarbe für nicht ausgewählte Buttons */
-  color: white;
-  border: none;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: none;
+  border: 1px solid #e3b23c;
+  color: #e3b23c;
+  font-size: 1rem;
   cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background-color: #218838; /* Hover-Effekt */
+  background: #e3b23c;
+  color: black;
 }
 
-/* Rot markierte Personenanzahl-Buttons */
 .selected-person {
-  background-color: red !important; /* !important stellt sicher, dass die rote Farbe Priorität hat */
-  color: white;
+  background: white !important; /* !important stellt sicher, dass die rote Farbe Priorität hat */
+  color: black;
 }
-
-/* Rot markierte Uhrzeit-Buttons */
 .selected-time {
-  background-color: red !important; /* !important stellt sicher, dass die rote Farbe Priorität hat */
-  color: white;
+  background-color: #e3b23c !important; /* !important stellt sicher, dass die rote Farbe Priorität hat */
+  color: black;
 }
 
 .is-invalid-date {
@@ -321,19 +324,37 @@ button:hover {
 
 form {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Stapelt die Eingabefelder vertikal */
+  align-items: flex-start; /* Richtet Labels und Inputs aus */
+  max-width: 500px; /* Optional: maximale Breite des Formulars */
+  margin: 0 auto; /* Zentriert das Formular auf der Seite */
 }
 
 .form-group {
+  display: flex;
+  flex-direction: column; /* Stapelt das Label und das Eingabefeld */
   margin-bottom: 15px;
+  width: 100%; /* Stellt sicher, dass die Felder die gleiche Breite haben */
+}
+
+label {
+  margin-bottom: 5px; /* Abstand zwischen dem Label und dem Eingabefeld */
 }
 
 input {
-  padding: 8px;
-  font-size: 16px;
-  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  width: 100%; /* Eingabefelder sind immer gleich breit */
+  background: none;
+  border: 1px solid #e3b23c;
+  color: #e3b23c;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Berücksichtigt Padding in der Breite */
 }
-
+button[type="submit"] {
+  align-self: center; /* Zentriert den Button */
+  margin-top: 20px;
+}
 .error-message {
   color: red;
   font-size: 12px;

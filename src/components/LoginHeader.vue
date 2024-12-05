@@ -1,10 +1,9 @@
 <template>
-  <header class="restaurant-header">
+  <header class="restaurant-header" style="background-color: transparent">
     <div class="menu-icon" @click="toggleMenu">
       <!-- Three lines for the dropdown menu -->
       <span>☰</span>
     </div>
-    <h1>Italian Restaurant</h1>
 
     <!-- Login Button -->
     <div class="login">
@@ -102,12 +101,18 @@ export default {
 
 <style scoped>
 .restaurant-header {
+  position: absolute; /* Über dem Video platzieren */
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background-color: black;
+  background-color: rgba(0, 0, 0, 0.4); /* Transparenter Hintergrund */
   color: white;
+  z-index: 2; /* Höher als das Video */
+  backdrop-filter: blur(5px); /* Optional: Unschärfe für besseren Kontrast */
 }
 
 .menu-icon {
@@ -120,15 +125,19 @@ export default {
 }
 
 button {
+  background: none;
+  border: 1px solid #e3b23c;
+  color: #e3b23c;
   padding: 10px 20px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
+  font-size: 1rem;
   cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background-color: #c0392b;
+  background: #e3b23c;
+  color: black;
 }
 
 .popdown-menu {
@@ -136,7 +145,7 @@ button:hover {
   top: 80px;
   left: 0;
   width: 100%;
-  background-color: black;
+  background-color: transparent;
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
@@ -145,16 +154,19 @@ button:hover {
 }
 
 .popdown-menu button {
-  background-color: #e74c3c;
-  padding: 10px;
-  font-size: 16px;
-  color: white;
-  border: none;
+  background: none;
+  border: 1px solid #e3b23c;
+  color: #e3b23c;
+  padding: 10px 20px;
+  font-size: 1rem;
   cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.3s ease;
 }
 
 .popdown-menu button:hover {
-  background-color: #c0392b;
+  background: #e3b23c;
+  color: black;
 }
 
 .login-modal {
@@ -171,10 +183,11 @@ button:hover {
 }
 
 .login-modal-content {
+  margin-top: 35%;
   background-color: black;
   padding: 40px;
   border-radius: 8px;
-  width: 400px;
+  width: 20%;
   position: relative;
   z-index: 1001;
 }
