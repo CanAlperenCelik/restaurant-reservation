@@ -8,6 +8,7 @@ import AdminDashboard from "./components/AdminView/AdminDashboard.vue";
 import ReservationAdmin from "./components/AdminView/ReservationAdmin.vue";
 import AdminHome from "./components/AdminView/AdminHome.vue";
 import TableView from "./components/AdminView/TableView.vue";
+import ThankYouPage from "./components/ThankYouPage.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomePage },
@@ -31,6 +32,7 @@ const routes = [
       },
     ],
   },
+  { path: "/thank-you", name: "ThankYouPage", component: ThankYouPage },
   { path: "/error-page", name: "ErrorPage", component: ErrorPage },
   { path: "/:pathMatch(.*)*", redirect: "/error-page" },
 ];

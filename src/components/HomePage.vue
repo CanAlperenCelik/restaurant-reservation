@@ -69,9 +69,6 @@
         </div>
       </div>
     </section>
-    <selection class="reservation-selection">
-      <ReservationPage />
-    </selection>
     <selection class="review-selection">
       <ReviewSlider />
     </selection>
@@ -84,14 +81,12 @@ import LoginHeader from "./LoginHeader.vue";
 import pizzaVideo from "../assets/Pizza.mp4";
 import pastaVideo from "../assets/Pasta.mp4";
 import FooterMain from "./FooterMain.vue";
-import ReservationPage from "./ReservationPage.vue";
 import ReviewSlider from "./ReviewSlider.vue";
 export default {
   name: "HomePage",
   components: {
     LoginHeader,
     FooterMain,
-    ReservationPage,
     ReviewSlider,
   },
   data() {
@@ -199,7 +194,6 @@ export default {
   background: #e3b23c;
   color: black;
 }
-
 /* Info-Sektion */
 .info-section {
   margin: 45px auto;
@@ -209,16 +203,20 @@ export default {
   justify-content: center;
 }
 
+/* Info-Container */
 .info-container {
   max-width: 1200px;
   display: flex;
+  flex-direction: column; /* Vertikale Anordnung: Text über Bildern */
   margin: 0 auto;
   gap: 40px;
   position: relative;
+  width: 100%; /* Sicherstellen, dass der Container die gesamte Breite einnimmt */
 }
 
+/* Textbereich */
 .text-section {
-  flex: 1;
+  text-align: center; /* Text zentrieren */
 }
 
 .text-section h3 {
@@ -243,28 +241,26 @@ export default {
 
 /* Bildbereich */
 .image-section {
-  flex: 1;
-  display: flex; /* Bilder nebeneinander anordnen */
-  justify-content: space-between; /* Platz zwischen den Bildern */
-  align-items: center; /* Vertikal zentriert */
-  gap: 20px;
+  display: flex;
+  justify-content: center; /* Bilder zentrieren */
+  gap: 20px; /* Abstand zwischen den Bildern */
+  margin-top: 20px; /* Abstand von Textbereich zu Bildern */
+  flex-wrap: wrap; /* Sicherstellen, dass die Bilder bei kleinen Bildschirmen umgebrochen werden */
 }
 
-.pizza-image {
-  width: 45%; /* Bildbreite auf 45% des Containers */
+.pizza-image,
+.family-image {
+  width: 45%; /* Bilder nehmen 45% der Breite ein */
+  max-width: 300px; /* Maximalbreite auf 300px setzen */
+  height: auto; /* Höhe automatisch anpassen */
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.family-image {
-  width: 45%; /* Bildbreite auf 45% des Containers */
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Buttons */
 .button-container {
   margin: 45px auto;
+  text-align: center; /* Buttons zentrieren */
 }
 
 button {
@@ -283,16 +279,60 @@ button:hover {
   color: black;
 }
 
-/* Responsives Design */
+/* Responsives Design für kleinere Bildschirmgrößen */
 @media (max-width: 768px) {
+  .info-container {
+    flex-direction: column; /* Text und Bilder untereinander anordnen */
+    align-items: center; /* Textbereich und Bilder zentrieren */
+  }
+
+  .text-section {
+    text-align: center; /* Text zentrieren */
+  }
+
   .image-section {
-    flex-direction: column; /* Bilder untereinander anordnen */
-    gap: 20px;
+    justify-content: center; /* Bilder zentrieren */
   }
 
   .pizza-image,
   .family-image {
-    width: 100%; /* Bilder auf die gesamte Breite anpassen */
+    width: 40%; /* Bilder auf 90% der Breite anpassen */
+    max-width: 300px; /* Maximalbreite auf 300px setzen */
+  }
+
+  .button-container {
+    text-align: center; /* Buttons untereinander und zentriert */
+    margin-bottom: 20px; /* Abstand zwischen den Buttons und den Bildern */
+  }
+
+  button {
+    width: 100%; /* Buttons nehmen 100% der Breite ein */
+    margin-bottom: 10px; /* Abstand zwischen den Buttons */
+  }
+}
+
+/* Anpassungen für sehr kleine Bildschirme */
+@media (max-width: 480px) {
+  .text-section h3 {
+    font-size: 1.8rem;
+  }
+
+  .text-section h2 {
+    font-size: 2rem;
+  }
+
+  .text-section p {
+    font-size: 1rem;
+  }
+  .image-section {
+    width: 100%;
+    height: 80%;
+  }
+
+  .pizza-image,
+  .family-image {
+    width: 300px;
+    height: 300px;
   }
 }
 </style>

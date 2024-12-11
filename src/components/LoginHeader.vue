@@ -1,5 +1,5 @@
 <template>
-  <header class="restaurant-header" style="background-color: transparent">
+  <header class="restaurant-header">
     <div class="menu-icon" @click="toggleMenu">
       <!-- Three lines for the dropdown menu -->
       <span>☰</span>
@@ -12,42 +12,44 @@
 
     <!-- Popdown Menu under the header -->
     <div v-if="showMenu" class="popdown-menu">
+      <button v-if="!isReservationPage" @click="goToReservation">
+        Reservation
+      </button>
+      <button v-else @click="goToHome">Startseite</button>
       <button @click="goToMenu">Menu</button>
-      <button @click="goToReservation">Reservation</button>
-    </div>
-
-    <!-- Login Modal -->
-    <div v-if="showLoginModal" class="login-modal">
-      <div class="login-modal-content">
-        <span class="close" @click="toggleLoginModal">&times;</span>
-        <h2>Login</h2>
-        <form @submit.prevent="login">
-          <div class="form-group">
-            <label for="username">Username:</label>
-            <input
-              type="text"
-              v-model="loginForm.username"
-              id="username"
-              required
-            />
-          </div>
-          <div class="form-group password-group">
-            <label for="password">Password:</label>
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model="loginForm.password"
-              id="password"
-              required
-            />
-            <span class="password-toggle" @click="togglePasswordVisibility">
-              {{ showPassword ? "🙈" : "👁️" }}
-            </span>
-          </div>
-          <button type="submit">Log In</button>
-        </form>
-      </div>
     </div>
   </header>
+  <!-- Login Modal -->
+  <div v-if="showLoginModal" class="login-modal">
+    <div class="login-modal-content">
+      <span class="close" @click="toggleLoginModal">&times;</span>
+      <h2>Login</h2>
+      <form @submit.prevent="login">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input
+            type="text"
+            v-model="loginForm.username"
+            id="username"
+            required
+          />
+        </div>
+        <div class="form-group password-group">
+          <label for="password">Password:</label>
+          <input
+            :type="showPassword ? 'text' : 'password'"
+            v-model="loginForm.password"
+            id="password"
+            required
+          />
+          <span class="password-toggle" @click="togglePasswordVisibility">
+            {{ showPassword ? "🙈" : "👁️" }}
+          </span>
+        </div>
+        <button type="submit">Log In</button>
+      </form>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -61,9 +63,12 @@ export default {
         username: "",
         password: "",
       },
-      fixedUsername: "Can",
-      fixedPassword: "1905Can",
     };
+  },
+  computed: {
+    isReservationPage() {
+      return this.$route.name === "Reservation";
+    },
   },
   methods: {
     toggleLoginModal() {
@@ -76,14 +81,7 @@ export default {
       this.showPassword = !this.showPassword;
     },
     goToAdminView() {
-      this.$router
-        .push({ name: "AdminHome" }) // Hier sicherstellen, dass 'AdminHome' existiert
-        .then(() => {
-          console.log("Navigation success");
-        })
-        .catch((err) => {
-          console.error("Navigation error:", err);
-        });
+      this.$router.push({ name: "AdminHome" });
     },
     goToReservation() {
       this.$router.push({ name: "Reservation" });
@@ -91,9 +89,42 @@ export default {
     goToMenu() {
       this.$router.push({ name: "Menu" });
     },
-    login() {
-      // Dein Login-Code hier...
-      this.goToAdminView(); // Stelle sicher, dass dieser Aufruf nach einem erfolgreichen Login erfolgt
+    goToHome() {
+      this.$router.push({ name: "Home" });
+    },
+    async login() {
+      const { username, password } = this.loginForm;
+
+      if (!username || !password) {
+        alert("Bitte Benutzername und Passwort eingeben.");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://localhost/reservation-api/login/Login.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+          alert("Login erfolgreich");
+          this.showLoginModal = false;
+          this.$router.push({ name: "AdminHome" });
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anmeldung:", error);
+        alert("Es gab ein Problem mit der Anmeldung.");
+      }
     },
   },
 };
@@ -101,7 +132,7 @@ export default {
 
 <style scoped>
 .restaurant-header {
-  position: absolute; /* Über dem Video platzieren */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -109,10 +140,10 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.4); /* Transparenter Hintergrund */
+  background-color: transparent;
   color: white;
-  z-index: 2; /* Höher als das Video */
-  backdrop-filter: blur(5px); /* Optional: Unschärfe für besseren Kontrast */
+  z-index: 2;
+  backdrop-filter: blur(5px);
 }
 
 .menu-icon {
@@ -146,6 +177,7 @@ button:hover {
   left: 0;
   width: 100%;
   background-color: transparent;
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: space-around;
   padding: 10px 0;
@@ -170,26 +202,28 @@ button:hover {
 }
 
 .login-modal {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5); /* Halbtransparenter Hintergrund */
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Horizontal zentrieren */
+  align-items: center; /* Vertikal zentrieren */
   z-index: 1000;
 }
 
 .login-modal-content {
-  margin-top: 35%;
   background-color: black;
-  padding: 40px;
+  padding: 20px;
   border-radius: 8px;
-  width: 20%;
+  width: 90%;
+  max-width: 400px; /* Maximaler Wert für breite Bildschirme */
   position: relative;
   z-index: 1001;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
 .close {
@@ -238,5 +272,29 @@ input[type="submit"] {
 
 input[type="submit"]:hover {
   background-color: #c0392b;
+}
+
+/* Media Queries für unterschiedliche Bildschirmgrößen */
+@media (max-width: 768px) {
+  .login-modal-content {
+    width: 90%; /* Für kleinere Bildschirme breiter machen */
+  }
+}
+
+@media (max-width: 480px) {
+  .login-modal-content {
+    width: 95%; /* Für sehr kleine Bildschirme noch breiter */
+    padding: 15px; /* Etwas weniger Innenabstand */
+  }
+
+  .form-group input {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  button {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
 }
 </style>

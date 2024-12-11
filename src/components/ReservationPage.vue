@@ -1,138 +1,147 @@
 <template>
-  <div class="reservation">
-    <h1>Tisch reservieren</h1>
+  <div id="app">
+    <LoginHeader />
+    <div class="reservation">
+      <h1>Tisch reservieren</h1>
 
-    <!-- Schritt 1: Personenanzahl auswählen -->
-    <div>
-      <h2>Wählen Sie die Personenanzahl:</h2>
-      <div class="person-count-buttons">
+      <!-- Schritt 1: Personenanzahl auswählen -->
+      <section class="person">
+        <h2>Wählen Sie die Personenanzahl:</h2>
+        <div class="person-count-buttons">
+          <button
+            v-for="count in personCountOptions"
+            :key="count"
+            @click="selectPersonCount(count)"
+            :class="{ 'selected-person': reservation.personCount === count }"
+          >
+            {{ count }} Personen
+          </button>
+        </div>
+      </section>
+
+      <!-- Schritt 2: Datum auswählen -->
+      <section class="date" v-if="currentStep >= 2">
+        <h3>Wählen Sie das Datum:</h3>
+        <input
+          type="date"
+          v-model="reservation.date"
+          @change="validateDate"
+          :min="today"
+          :class="{ 'is-invalid-date': isPastDate(reservation.date) }"
+          required
+        />
+      </section>
+
+      <!-- Schritt 3: Uhrzeit auswählen -->
+      <section class="time" v-if="currentStep >= 3">
+        <h4>Wählen Sie eine Uhrzeit:</h4>
         <button
-          v-for="count in personCountOptions"
-          :key="count"
-          @click="selectPersonCount(count)"
-          :class="{ 'selected-person': reservation.personCount === count }"
+          v-for="time in availableTimes"
+          :key="time"
+          @click="selectTime(time)"
+          :class="{ 'selected-time': reservation.time === time }"
         >
-          {{ count }} Personen
+          {{ time }}
         </button>
-      </div>
-    </div>
+      </section>
 
-    <!-- Schritt 2: Datum auswählen -->
-    <div v-if="currentStep >= 2">
-      <h2>Wählen Sie das Datum:</h2>
-      <input
-        style="width: 55%"
-        type="date"
-        v-model="reservation.date"
-        @change="validateDate"
-        :min="today"
-        :class="{ 'is-invalid-date': isPastDate(reservation.date) }"
-        required
-      />
-    </div>
-
-    <!-- Schritt 3: Uhrzeit auswählen -->
-    <div v-if="currentStep >= 3">
-      <h2>Wählen Sie eine Uhrzeit:</h2>
-      <button
-        v-for="time in availableTimes"
-        :key="time"
-        @click="selectTime(time)"
-        :class="{ 'selected-time': reservation.time === time }"
-      >
-        {{ time }}
-      </button>
-    </div>
-
-    <!-- Schritt 4: Kontaktinformationen eingeben -->
-    <div v-if="currentStep >= 4">
-      <h2>Kontaktinformationen:</h2>
-      <form @submit.prevent="confirmAndReturn">
-        <div class="form-group">
+      <!-- Schritt 4: Kontaktinformationen eingeben -->
+      <section class="information" v-if="currentStep >= 4">
+        <h5>Kontaktinformationen:</h5>
+        <form @submit.prevent="confirmAndReturn">
           <div class="form-group">
-            <label for="name">Vorname:</label>
+            <div class="form-group">
+              <label for="name">Vorname:</label>
+              <input
+                type="text"
+                id="firstname"
+                v-model="reservation.firstname"
+                @input="validateName"
+                :class="{ 'is-invalid': errors.firstname }"
+                required
+              />
+              <span v-if="errors.firstname" class="error-message">
+                Bitte geben Sie nur Buchstaben ein.
+              </span>
+            </div>
+            <label for="name">Name:</label>
             <input
               type="text"
-              id="firstname"
-              v-model="reservation.firstname"
+              id="lastname"
+              v-model="reservation.lastname"
               @input="validateName"
-              :class="{ 'is-invalid': errors.firstname }"
+              :class="{ 'is-invalid': errors.lastname }"
               required
             />
-            <span v-if="errors.firstname" class="error-message">
+            <span v-if="errors.lastname" class="error-message">
               Bitte geben Sie nur Buchstaben ein.
             </span>
           </div>
-          <label for="name">Name:</label>
-          <input
-            type="text"
-            id="lastname"
-            v-model="reservation.lastname"
-            @input="validateName"
-            :class="{ 'is-invalid': errors.lastname }"
-            required
-          />
-          <span v-if="errors.lastname" class="error-message">
-            Bitte geben Sie nur Buchstaben ein.
-          </span>
-        </div>
 
-        <div class="form-group">
-          <label for="phone">Telefonnummer:</label>
-          <input
-            type="tel"
-            id="phone"
-            v-model="reservation.phone"
-            @input="validatePhone"
-            :class="{ 'is-invalid': errors.phone }"
-            required
-          />
-          <span v-if="errors.phone" class="error-message">
-            Nur Zahlen und das "+"-Zeichen sind erlaubt.
-          </span>
-        </div>
+          <div class="form-group">
+            <label for="phone">Telefonnummer:</label>
+            <input
+              type="tel"
+              id="phone"
+              v-model="reservation.phone"
+              @input="validatePhone"
+              :class="{ 'is-invalid': errors.phone }"
+              required
+            />
+            <span v-if="errors.phone" class="error-message">
+              Nur Zahlen und das "+"-Zeichen sind erlaubt.
+            </span>
+          </div>
 
-        <div class="form-group">
-          <label for="email">E-Mail:</label>
-          <input
-            type="email"
-            id="email"
-            v-model="reservation.email"
-            @input="validateEmail"
-            :class="{ 'is-invalid': errors.email }"
-            required
-          />
-          <span v-if="errors.email" class="error-message">
-            Bitte geben Sie eine gültige E-Mail-Adresse ein.
-          </span>
-        </div>
+          <div class="form-group">
+            <label for="email">E-Mail:</label>
+            <input
+              type="email"
+              id="email"
+              v-model="reservation.email"
+              @input="validateEmail"
+              :class="{ 'is-invalid': errors.email }"
+              required
+            />
+            <span v-if="errors.email" class="error-message">
+              Bitte geben Sie eine gültige E-Mail-Adresse ein.
+            </span>
+          </div>
 
-        <!-- Hier den Button zum Absenden der Reservierung hinzufügen -->
-        <button type="submit" :disabled="hasErrors">
-          Reservierung abschicken
-        </button>
-      </form>
+          <!-- Hier den Button zum Absenden der Reservierung hinzufügen -->
+          <button type="submit" :disabled="hasErrors">
+            Reservierung abschicken
+          </button>
+        </form>
+      </section>
+
+      <!-- Anzeige der aktuellen Reservierungen -->
+      <div v-if="reservations.length">
+        <h2>Aktuelle Reservierungen</h2>
+        <ul>
+          <li v-for="(res, index) in reservations" :key="index">
+            {{ res.firstname }} -{{ res.lastname }} - {{ res.phone }} -
+            {{ res.email }} - {{ res.date }} um {{ res.time }} für
+            {{ res.personCount }} Personen
+          </li>
+        </ul>
+      </div>
     </div>
-
-    <!-- Anzeige der aktuellen Reservierungen -->
-    <div v-if="reservations.length">
-      <h2>Aktuelle Reservierungen</h2>
-      <ul>
-        <li v-for="(res, index) in reservations" :key="index">
-          {{ res.firstname }} -{{ res.lastname }} - {{ res.phone }} -
-          {{ res.email }} - {{ res.date }} um {{ res.time }} für
-          {{ res.personCount }} Personen
-        </li>
-      </ul>
-    </div>
+    <FooterMain />
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import LoginHeader from "./LoginHeader.vue";
+import FooterMain from "./FooterMain.vue";
 
 export default {
   name: "ReservationPage",
+  components: {
+    LoginHeader,
+    FooterMain,
+  },
   data() {
     return {
       currentStep: 1,
@@ -251,7 +260,7 @@ export default {
           console.log("Serverantwort:", response.data); // Logge die Antwort vom Server
           if (response.data.status === "success") {
             alert("Reservierung erfolgreich!");
-            this.$router.push("/"); // Nach erfolgreicher Reservierung zur Startseite umleiten
+            this.$router.push("/thank-you"); // Nach erfolgreicher Reservierung zur Startseite umleiten
           } else {
             alert("Fehler: " + response.data.message);
           }
@@ -266,37 +275,54 @@ export default {
 </script>
 
 <style scoped>
+#app {
+  padding-top: 70px; /* Die Höhe des Headers */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Zentriert den Hauptinhalt horizontal */
+  justify-content: flex-start; /* Beginnt von oben */
+  min-height: 100vh; /* Mindestens die volle Höhe des Bildschirms */
+  box-sizing: border-box;
+}
+
 .reservation {
-  position: relative; /* Damit der Hintergrund auf die .reservation div beschränkt wird */
-  overflow: hidden; /* Verhindert, dass animierte Kreise aus der Box herausragen */
-  max-width: 100%;
-  margin: 45px auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: center; /* Zentriert den Inhalt */
   padding: 20px;
+  width: 100%; /* Nutzt die gesamte verfügbare Breite */
+  max-width: 1200px; /* Optional: Begrenzung für sehr große Bildschirme */
   background: radial-gradient(
     circle,
     rgba(255, 136, 0, 0.2) 0%,
     rgba(0, 0, 0, 0) 80%
   );
+  box-sizing: border-box;
 }
-
 h1 {
   text-align: center;
-  margin: 5px 20px;
+  font-size: 1.5rem;
 }
-h2 {
+
+h2,
+h3,
+h4,
+h5 {
   text-align: center;
   margin: 20px;
+  font-size: 1.2rem;
 }
 .person-count-buttons button,
 button {
-  margin-top: 20px;
-  padding: 10px 20px;
+  margin-top: 10px;
+  padding: 10px;
   background: none;
   border: 1px solid #e3b23c;
   color: #e3b23c;
   font-size: 1rem;
   cursor: pointer;
-  margin-right: 10px;
   transition: all 0.3s ease;
 }
 
@@ -306,16 +332,13 @@ button:hover {
 }
 
 .selected-person {
-  background: white !important; /* !important stellt sicher, dass die rote Farbe Priorität hat */
-  color: black;
-}
-.selected-time {
-  background-color: #e3b23c !important; /* !important stellt sicher, dass die rote Farbe Priorität hat */
-  color: black;
+  background: #e3b23c !important;
+  color: black !important;
 }
 
-.is-invalid-date {
-  border: 1px solid red;
+.selected-time {
+  background-color: #e3b23c;
+  color: black;
 }
 
 .is-invalid-date {
@@ -324,37 +347,37 @@ button:hover {
 
 form {
   display: flex;
-  flex-direction: column; /* Stapelt die Eingabefelder vertikal */
-  align-items: flex-start; /* Richtet Labels und Inputs aus */
-  max-width: 500px; /* Optional: maximale Breite des Formulars */
-  margin: 0 auto; /* Zentriert das Formular auf der Seite */
+  flex-direction: column;
+  align-items: center;
+  width: 100%; /* Formular nutzt ebenfalls die gesamte Breite */
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column; /* Stapelt das Label und das Eingabefeld */
+  width: 100%; /* Eingabefelder werden breiter */
   margin-bottom: 15px;
-  width: 100%; /* Stellt sicher, dass die Felder die gleiche Breite haben */
 }
 
 label {
-  margin-bottom: 5px; /* Abstand zwischen dem Label und dem Eingabefeld */
+  display: block;
+  margin-bottom: 5px;
 }
 
 input {
+  width: 100%; /* Eingabefelder füllen die Breite */
   padding: 10px;
   font-size: 1rem;
-  width: 100%; /* Eingabefelder sind immer gleich breit */
   background: none;
   border: 1px solid #e3b23c;
   color: #e3b23c;
   transition: all 0.3s ease;
-  box-sizing: border-box; /* Berücksichtigt Padding in der Breite */
+  box-sizing: border-box;
 }
+
 button[type="submit"] {
-  align-self: center; /* Zentriert den Button */
-  margin-top: 20px;
+  margin-top: 15px;
+  padding: 10px 20px;
 }
+
 .error-message {
   color: red;
   font-size: 12px;
@@ -366,9 +389,48 @@ button[type="submit"] {
 
 ul {
   list-style-type: none;
+  padding: 0;
 }
 
 ul li {
   margin-bottom: 10px;
+}
+
+footer {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+  .reservation {
+    padding: 15px;
+  }
+
+  button,
+  input {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-size: 1rem;
+  }
+
+  button,
+  input {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <header class="restaurant-header">
-    <h1>Italienisches Restaurant</h1>
+    <h1>Da Lisa Pizzeria</h1>
     <div class="cart">
       <span>🛒 Warenkorb: {{ cartItems.length }} Artikel</span>
       <span>Gesamt: {{ totalPrice.toFixed(2) }} €</span>
