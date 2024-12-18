@@ -87,7 +87,7 @@ export default {
       this.$router.push({ name: "Reservation" });
     },
     goToMenu() {
-      this.$router.push({ name: "Menu" });
+      this.$router.push({ name: "MenuCard" });
     },
     goToHome() {
       this.$router.push({ name: "Home" });

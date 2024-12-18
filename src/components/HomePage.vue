@@ -49,7 +49,7 @@
             einem Erlebnis! Buon appetito!
           </p>
           <div class="button-container">
-            <button @click="goToMenu">Zur Speisekarte</button>
+            <button @click="goToMenuCard">Zur Speisekarte</button>
             <button @click="goToReservation">Jetzt Reservieren!</button>
           </div>
         </div>
@@ -101,8 +101,8 @@ export default {
     goToReservation() {
       this.$router.push({ name: "Reservation" });
     },
-    goToMenu() {
-      this.$router.push({ name: "Menu" });
+    goToMenuCard() {
+      this.$router.push({ name: "MenuCard" });
     },
     scrollToInfoSection() {
       this.$refs.infoSection.scrollIntoView({ behavior: "smooth" });

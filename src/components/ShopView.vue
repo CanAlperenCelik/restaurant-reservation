@@ -5,39 +5,92 @@
       :totalPrice="totalPrice"
       @goToCheckout="showCheckout = true"
     />
-    <h1>Herzlich willkommen, {{ customerName }}!</h1>
+
+    <!-- Hero Section with Video Background -->
+    <section class="hero">
+      <video
+        autoplay
+        muted
+        loop
+        playsinline
+        class="background-video"
+        :class="{ 'zoom-pasta': isPastaVideo }"
+        ref="backgroundVideo"
+      >
+        <source :src="currentVideo" type="video/mp4" />
+        Dein Browser unterstützt keine Videos.
+      </video>
+
+      <!-- Content over the Video -->
+      <div class="hero-content">
+        <h1>Herzlich willkommen, {{ customerName }}!</h1>
+        <!-- In deinem Template: -->
+        <nav class="category-sidebar">
+          <ul>
+            <li>
+              <a href="#Vorspeise" @click="scrollToCategory('Vorspeise')"
+                >Vorspeisen</a
+              >
+            </li>
+            <li>
+              <a href="#Hauptgericht" @click="scrollToCategory('Hauptgericht')"
+                >Hauptspeise</a
+              >
+            </li>
+            <li>
+              <a href="#Dessert" @click="scrollToCategory('Dessert')"
+                >Dessert</a
+              >
+            </li>
+            <li>
+              <a href="#Getränk" @click="scrollToCategory('Getränk')"
+                >Getränk</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </section>
+
     <div class="shop-content">
-      <nav class="category-sidebar">
-        <ul>
-          <li><a href="#Vorspeise">Vorspeisen</a></li>
-          <li><a href="#Hauptgericht">Hauptspeise</a></li>
-          <li><a href="#Dessert">Dessert</a></li>
-          <li><a href="#Getränk">Getränk</a></li>
-        </ul>
-      </nav>
-
       <div class="menu-items">
-        <section id="Vorspeise">
-          <h2>Vorspeisen</h2>
+        <section
+          v-for="category in [
+            'Vorspeise',
+            'Hauptgericht',
+            'Dessert',
+            'Getränk',
+          ]"
+          :key="category"
+          :id="category"
+        >
+          <h2>{{ category }}</h2>
           <div
             class="item"
-            v-for="item in filteredItems('Vorspeise')"
+            v-for="item in filteredItems(category)"
             :key="item.id"
           >
-            <div v-if="item.image_url && item.image_url.endsWith('.mp4')">
+            <!-- Medien (Bilder/Videos) -->
+            <div v-if="getMediaPath(item.id)">
+              <img
+                v-if="isImage(getMediaPath(item.id))"
+                :src="getMediaPath(item.id)"
+                alt="Menu item"
+                class="menu-item-image"
+                @error="handleImageError"
+              />
               <video
-                :src="item.image_url"
+                v-else-if="isVideo(getMediaPath(item.id))"
+                :src="getMediaPath(item.id)"
                 controls
+                autoplay
+                loop
+                muted
                 class="menu-item-video"
               ></video>
             </div>
-            <div v-else>
-              <img
-                :src="item.image_url || 'path/to/placeholder.jpeg'"
-                :alt="item.name"
-                class="menu-item-image"
-              />
-            </div>
+
+            <!-- Menüdetails -->
             <h3>{{ item.name }}</h3>
             <p>{{ item.description }}</p>
             <p>{{ item.price }} €</p>
@@ -45,81 +98,11 @@
           </div>
         </section>
 
-        <section id="Hauptgericht">
-          <h2>Hauptgericht</h2>
-          <div
-            class="item"
-            v-for="item in filteredItems('Hauptgericht')"
-            :key="item.id"
-          >
-            <video
-              :src="item.image_url"
-              controls
-              class="menu-item-video"
-            ></video>
+        <selection class="review-selection">
+          <ReviewSlider />
+        </selection>
 
-            <h3>{{ item.name }}</h3>
-            <p>{{ item.description }}</p>
-            <p>{{ item.price }} €</p>
-            <button @click="addToCart(item)">In den Warenkorb</button>
-          </div>
-        </section>
-
-        <section id="Dessert">
-          <h2>Dessert</h2>
-          <div
-            class="item"
-            v-for="item in filteredItems('Dessert')"
-            :key="item.id"
-          >
-            <!-- <div v-if="item.image_url && item.image_url.endsWith('.mp4')">
-              <video
-                :src="item.image_url"
-                controls
-                class="menu-item-video"
-              ></video>
-            </div>
-            <div v-else>
-              <img
-                :src="item.image_url || 'path/to/placeholder.jpg'"
-                :alt="item.name"
-                class="menu-item-image"
-              />
-            </div> -->
-            <h3>{{ item.name }}</h3>
-            <p>{{ item.description }}</p>
-            <p>{{ item.price }} €</p>
-            <button @click="addToCart(item)">In den Warenkorb</button>
-          </div>
-        </section>
-
-        <section id="Getränk">
-          <h2>Getränke</h2>
-          <div
-            class="item"
-            v-for="item in filteredItems('Getränk')"
-            :key="item.id"
-          >
-            <div v-if="item.image_url && item.image_url.endsWith('.mp4')">
-              <video
-                :src="item.image_url"
-                controls
-                class="menu-item-video"
-              ></video>
-            </div>
-            <div v-else>
-              <img
-                :src="item.image_url || 'path/to/placeholder.jpg'"
-                :alt="item.name"
-                class="menu-item-image"
-              />
-            </div>
-            <h3>{{ item.name }}</h3>
-            <p>{{ item.description }}</p>
-            <p>{{ item.price }} €</p>
-            <button @click="addToCart(item)">In den Warenkorb</button>
-          </div>
-        </section>
+        <FooterMain />
       </div>
 
       <!-- Checkout-Komponente -->
@@ -140,23 +123,37 @@
 import RestaurantHeader from "./RestaurantHeader.vue";
 import CheckoutView from "./CheckoutView.vue";
 import axios from "axios";
+import FooterMain from "./FooterMain.vue";
+import Weinvideo from "../assets/Wein.mp4";
 
 export default {
   name: "ShopView",
   components: {
     RestaurantHeader,
+    FooterMain,
+
     CheckoutView,
   },
   data() {
     return {
       customerGuid: "",
       customerName: "",
-      menuItems: [],
+      menuItems: [], // Menü aus der Datenbank
       cartItems: [],
       totalPrice: 0,
       showCheckout: false,
-      guidIsValid: false,
-      loading: true,
+      mediaMapping: {
+        1: "Bruschetta1.jpg", // Bruschetta
+        2: "CesarSalad.jpeg", // Caesar Salad
+        3: "SpaghettiCarbonara.mp4", // Spaghetti Carbonara
+        4: "BeefSteak.mp4", // Rindersteak
+        5: "Tiramisu.jpg", // Tiramisu
+        6: "Espresso.mp4", // Espresso
+      },
+      videos: [Weinvideo], // Liste der Videos
+      currentVideo: Weinvideo, // Standardmäßig Pizza-Video
+      isPastaVideo: false, // Flag, um zu erkennen, ob Pasta-Video aktiv ist
+      videoInterval: null, // Speichert den Intervall-Timer
     };
   },
   mounted() {
@@ -165,49 +162,35 @@ export default {
   },
   methods: {
     async fetchCustomerInfo() {
-      const guid = this.$route.params.guid;
-      this.customerGuid = guid;
+      const reservationCode = this.$route.params.reservation_code; // Verwende reservation_code
+      this.customerGuid = reservationCode;
 
       try {
         const response = await axios.get(
-          `http://localhost/reservation-api/order/check_guid.php?guid=${guid}`
+          `http://localhost/reservation-api/reservation/get_customer_name.php?reservation_code=${reservationCode}`
         );
         if (response.data.status === "success") {
-          this.guidIsValid = true;
-          this.fetchCustomerName();
+          this.customerName = `${response.data.firstname} ${response.data.lastname}`;
         } else {
-          this.guidIsValid = false;
           this.$router.push("/error-page");
         }
       } catch (error) {
-        console.error("Fehler beim Überprüfen der GUID:", error);
+        console.error("Fehler beim Abrufen der Kundendaten:", error);
         this.$router.push("/error-page");
-      } finally {
-        this.loading = false;
       }
     },
+    scrollToCategory(category) {
+      // Finde das Element mit der entsprechenden ID und scrolle es leicht nach oben
+      const categoryElement = document.getElementById(category);
 
-    async fetchCustomerName() {
-      if (!this.guidIsValid) return;
-      const guid = this.customerGuid;
-
-      try {
-        const response = await axios.get(
-          `http://localhost/reservation-api/order/get_customer_name.php?guid=${guid}`
-        );
-        if (response.data.status === "success") {
-          this.customerName = response.data.name;
-        } else {
-          console.error(
-            "Fehler beim Laden des Kundennamens:",
-            response.data.message
-          );
-        }
-      } catch (error) {
-        console.error("Fehler beim Laden des Kundennamens:", error);
+      if (categoryElement) {
+        // Scrollt zum Ziel und nimmt etwas Abstand, um den Header zu berücksichtigen
+        window.scrollTo({
+          top: categoryElement.offsetTop - 50, // 80px Abstand für den Header
+          behavior: "smooth", // Sanftes Scrollen
+        });
       }
     },
-
     async fetchMenuItems() {
       try {
         const response = await axios.get(
@@ -227,12 +210,7 @@ export default {
     },
 
     filteredItems(category) {
-      return this.menuItems.filter((item) => {
-        if (!item.image_url.startsWith("http")) {
-          item.image_url = `http://localhost/path/to/images/${item.image_url}`;
-        }
-        return item.category === category;
-      });
+      return this.menuItems.filter((item) => item.category === category);
     },
 
     addToCart(item) {
@@ -250,58 +228,94 @@ export default {
       this.showCheckout = false;
     },
 
-    async placeOrder() {
-      const orderData = {
-        guid: this.customerGuid,
-        name: this.customerName,
-        orderDetails: this.cartItems.map((item) => item.id),
-        totalPrice: this.totalPrice,
-      };
+    handleImageError(event) {
+      event.target.src = "/assets/logo.png"; // Fallback-Bild
+    },
 
-      try {
-        const response = await axios.post(
-          "http://localhost/reservation-api/order/save_order.php",
-          orderData
-        );
-        if (response.data.status === "success") {
-          this.handleOrderCompletion();
-        } else {
-          console.error(
-            "Fehler beim Speichern der Bestellung:",
-            response.data.message
-          );
-          alert("Fehler beim Speichern der Bestellung");
-        }
-      } catch (error) {
-        console.error("Fehler beim Bestellvorgang:", error);
-        alert("Fehler beim Bestellen. Bitte versuchen Sie es später erneut.");
-      }
+    getMediaPath(itemId) {
+      const filename = this.mediaMapping[itemId];
+      return filename ? require(`@/assets/${filename}`) : null;
+    },
+
+    isImage(filename) {
+      return /\.(jpg|jpeg|png|gif)$/i.test(filename);
+    },
+
+    isVideo(filename) {
+      return /\.(mp4|webm|ogg)$/i.test(filename);
     },
   },
 };
 </script>
 
 <style scoped>
-/* Styling für den Shop */
+/* Styling */
 .shop-container {
   background-color: black;
   color: white;
 }
 
+.hero {
+  position: relative;
+  height: 100vh; /* Volle Bildschirmhöhe */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1; /* Inhalt wird vor dem Video angezeigt */
+  color: white; /* Textfarbe */
+  font-size: 2.5rem; /* Größere Schrift für den Titel */
+  font-weight: bold; /* Fettgedruckter Text */
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); /* Schattierung für besseren Kontrast */
+  padding: 0 20px; /* Etwas Abstand links und rechts */
+}
+
+.hero-content h1 {
+  font-size: 3rem; /* Größerer Titel */
+  margin-bottom: 20px; /* Abstand unter dem Titel */
+  font-family: "Arial", sans-serif; /* Schöne Schriftart */
+}
+
+.background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Das Video wird skaliert, um den gesamten Hintergrund auszufüllen */
+  z-index: 0; /* Video wird hinter dem Inhalt platziert */
+}
+
 .category-sidebar {
-  width: 240px;
-  background: black;
+  margin-top: 30px;
   color: white;
-  padding: 20px;
+  font-size: 1.4rem; /* Größere Schriftgröße */
+  padding: 20px; /* Mehr Abstand innerhalb der Sidebar */
+  background: rgba(0, 0, 0, 0.5); /* Halbtransparenter Hintergrund */
+  border-radius: 8px; /* Abgerundete Ecken */
+}
+
+.category-sidebar ul {
+  list-style: none;
+  padding: 0;
 }
 
 .category-sidebar li {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Mehr Abstand zwischen den Menüpunkten */
 }
 
 .category-sidebar a {
-  color: #e3b23c;
-  font-size: 1.2rem;
+  color: gold;
+  font-size: 1.6rem; /* Noch größere Schriftgröße */
+  display: block; /* Jedes Element auf einer neuen Zeile */
+  padding: 10px 20px; /* Größerer Abstand für die Links */
+  border-radius: 5px; /* Abgerundete Ecken */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .category-sidebar a:hover {
@@ -319,7 +333,7 @@ export default {
 }
 
 .menu-items .item {
-  background-color: black;
+  background-color: transparent;
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 8px;
@@ -328,25 +342,25 @@ export default {
 
 .menu-items .item:hover {
   background-color: #e3b23c;
+  color: black;
 }
 
-.menu-item-image {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
+.menu-item-image,
 .menu-item-video {
-  width: 100%;
+  width: 80%; /* Bilder und Videos auf 80% der Breite setzen */
+  max-width: 300px; /* Maximale Breite festlegen */
   height: auto;
   border-radius: 10px;
   margin-bottom: 10px;
+  display: block; /* Stellen sicher, dass sie als Block-Element angezeigt werden */
+  margin-left: auto; /* Zentrieren */
+  margin-right: auto; /* Zentrieren */
 }
 
 button {
   padding: 10px 20px;
   background-color: #e3b23c;
-  color: white;
+  color: black;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -355,7 +369,8 @@ button {
 }
 
 button:hover {
-  background-color: #c2871f;
+  background-color: #b17d23;
+  color: white;
 }
 
 @media (max-width: 768px) {
@@ -363,9 +378,14 @@ button:hover {
     display: block;
   }
 
+  .hero-content h1 {
+    font-size: 2.5rem; /* Kleinere Schriftgröße auf mobilen Geräten */
+  }
+
   .category-sidebar {
     width: 100%;
     padding: 15px;
+    font-size: 1.2rem;
   }
 
   .menu-items {

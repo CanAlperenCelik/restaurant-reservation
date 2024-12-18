@@ -9,11 +9,13 @@ import ReservationAdmin from "./components/AdminView/ReservationAdmin.vue";
 import AdminHome from "./components/AdminView/AdminHome.vue";
 import TableView from "./components/AdminView/TableView.vue";
 import ThankYouPage from "./components/ThankYouPage.vue";
+import ShopCard from "./components/ShopCard.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomePage },
   { path: "/reservierung", name: "Reservation", component: ReservationPage },
-  { path: "/:guid/menu", name: "Menu", component: ShopView },
+  { path: "/speisekarte", name: "MenuCard", component: ShopCard },
+  { path: "/:reservation_code/menu", name: "Menu", component: ShopView },
   {
     path: "/admin",
     component: AdminDashboard, // Hauptkomponente für Admin-Bereich

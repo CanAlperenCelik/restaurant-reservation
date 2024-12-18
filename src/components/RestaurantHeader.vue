@@ -1,6 +1,5 @@
 <template>
   <header class="restaurant-header">
-    <h1>Da Lisa Pizzeria</h1>
     <div class="cart">
       <span>🛒 Warenkorb: {{ cartItems.length }} Artikel</span>
       <span>Gesamt: {{ totalPrice.toFixed(2) }} €</span>
@@ -32,17 +31,23 @@ export default {
 
 <style scoped>
 .restaurant-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background-color: black;
+  background-color: transparent;
   color: white;
+  z-index: 2;
 }
 
 .cart {
   display: flex;
   align-items: center;
+  margin-left: auto; /* Verschiebt den Warenkorb nach rechts */
 }
 
 .cart span {
