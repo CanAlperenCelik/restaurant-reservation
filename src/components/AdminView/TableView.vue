@@ -58,7 +58,27 @@ export default {
     this.fetchTables(); // Daten beim Mounten abrufen
   },
   methods: {
-    // API-Aufruf, um Tische zu laden
+    async fetchSessionId() {
+      try {
+        const response = await axios.get(
+          "http://localhost/reservation-api/session/get_current_session.php"
+        );
+
+        if (response.data.status === "success") {
+          return response.data.session_id || response.data.session_ids;
+        } else {
+          console.error(
+            "Fehler beim Abrufen der Session-ID:",
+            response.data.message
+          );
+          alert("Keine offene Session gefunden.");
+          return null;
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anfrage zur Session-ID:", error);
+        return null;
+      }
+    },
     async fetchTables() {
       try {
         const response = await axios.get(
@@ -122,28 +142,58 @@ export default {
         console.error("Fehler beim Zuweisen des Tisches:", error);
       }
     },
-    // Rechnung für einen Tisch erstellen
     async generateBill() {
-      if (!this.selectedTable || !this.selectedTable.session_id) {
-        console.error("Session-ID fehlt. Kann keine Rechnung erstellen.");
-        return;
-      }
-
       try {
+        // Session-ID abrufen
+        const sessionId = await this.fetchSessionId();
+
+        if (!sessionId) {
+          return; // Keine Session gefunden
+        }
+
+        // Daten des Tisches und Bestellungen vorbereiten
+        const table = this.selectedTable;
+        const orders = table.orders;
+        if (orders.length === 0) {
+          alert("Keine Bestellungen für diesen Tisch.");
+          return;
+        }
+
+        // Textinhalt für die Rechnung erstellen
+        let billContent = `Rechnung für Tisch ${table.name}\n\n`;
+        billContent += `Kapazität: ${table.capacity} Personen\n`;
+        billContent += `Status: ${
+          table.status === "occupied" ? "Besetzt" : "Frei"
+        }\n\n`;
+        billContent += "Bestellungen:\n";
+        orders.forEach((order, index) => {
+          billContent += `${index + 1}. ${order}\n`;
+        });
+
+        // Textdatei erstellen und herunterladen
+        const blob = new Blob([billContent], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `rechnung_tisch_${table.name}.txt`; // Dateiname
+        link.click(); // Klick auf den Link simulieren, um den Download zu starten
+
+        // Session beenden
+        const sessionData = { session_id: sessionId };
         const response = await axios.post(
           "http://localhost/reservation-api/session/end_session.php",
-          { session_id: this.selectedTable.session_id } // session_id übergeben
+          sessionData
         );
 
         if (response.data.status === "success") {
-          alert("Rechnung wurde erfolgreich erstellt.");
-          this.closePopup();
-          this.fetchTables(); // Tabellen aktualisieren
+          alert("Session erfolgreich beendet und Rechnung heruntergeladen.");
         } else {
-          console.error("Fehler beim Erstellen der Rechnung:", response.data);
+          console.error(
+            "Fehler beim Beenden der Session:",
+            response.data.message
+          );
         }
       } catch (error) {
-        console.error("Fehler beim Erstellen der Rechnung:", error);
+        console.error("Fehler bei der Anfrage zum Beenden der Session:", error);
       }
     },
   },

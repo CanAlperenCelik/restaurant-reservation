@@ -361,8 +361,8 @@ button {
   padding: 10px 20px;
   background-color: #e3b23c;
   color: black;
-  border: none;
-  border-radius: 5px;
+  border: black;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.3s ease;
@@ -371,6 +371,8 @@ button {
 button:hover {
   background-color: #b17d23;
   color: white;
+  border: black;
+  border-radius: 30px;
 }
 
 @media (max-width: 768px) {

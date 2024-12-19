@@ -28,7 +28,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from "axios";
 
@@ -58,38 +57,39 @@ export default {
     };
   },
   methods: {
-    async placeOrder() {
+    placeOrder() {
       const orderData = {
-        reservation_id: this.$route.params.reservation_id, // Pass reservation_id from URL
-        customer_guid: this.customerGuid,
-        customer_name: this.customerName,
-        order_details: this.cartItems.map((item) => item.id), // List of ordered items
-        totalPrice: this.totalPrice,
+        reservation_code: this.customerGuid, // Verwende die Kunden-ID oder eine andere entsprechende ID für die Reservierung
+        order_details: JSON.stringify(this.cartItems), // Die Bestelldetails als JSON
+        total_price: this.totalPrice, // Der Gesamtpreis der Bestellung
       };
 
-      try {
-        const response = await axios.post(
-          "http://localhost/reservation-api/order/save_order.php",
-          orderData
-        );
+      console.log("Sende folgende Bestellung:", orderData); // Logge die Bestelldaten vor dem Senden
 
-        if (response.data.status === "success") {
-          this.showThankYouPopup = true;
-          setTimeout(() => {
-            this.showThankYouPopup = false;
-            this.$emit("orderCompleted");
-          }, 2000);
-        } else {
-          this.errorMessage = response.data.message || "Unbekannter Fehler.";
-        }
-      } catch (error) {
-        console.error("Fehler beim Bestellen:", error);
-        this.errorMessage =
-          "Fehler beim Bestellen. Bitte versuchen Sie es später erneut.";
-      }
-    },
-    continueShopping() {
-      this.$emit("continueShopping");
+      // API-Aufruf, um die Bestellung zu speichern
+      axios
+        .post(
+          "http://localhost/reservation-api/order/save_order.php", // Pfad zu deinem PHP-Skript
+          orderData,
+          { headers: { "Content-Type": "application/json" } }
+        )
+        .then((response) => {
+          console.log("Serverantwort:", response.data); // Logge die Antwort vom Server
+          if (response.data.status === "success") {
+            alert("Bestellung erfolgreich gespeichert!");
+            this.showThankYouPopup = true;
+            setTimeout(() => {
+              this.showThankYouPopup = false;
+              // Du kannst hier eine Weiterleitung oder eine andere Aktion nach erfolgreicher Bestellung hinzufügen.
+            }, 2000);
+          } else {
+            this.errorMessage = response.data.message;
+          }
+        })
+        .catch((error) => {
+          console.error("Es ist ein Fehler aufgetreten:", error);
+          this.errorMessage = "Fehler beim Senden der Bestellung.";
+        });
     },
   },
 };
