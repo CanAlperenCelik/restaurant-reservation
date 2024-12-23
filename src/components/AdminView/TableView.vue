@@ -1,6 +1,6 @@
 <template>
   <div class="table-view">
-    <h1>Tischansicht</h1>
+    <h1>Tischübersicht</h1>
     <!-- Tische im Grid anzeigen -->
     <div class="tables-grid">
       <div
@@ -24,15 +24,17 @@
     <!-- Popup für besetzte Tische -->
     <div v-if="showPopup" class="popup">
       <div class="popup-content">
-        <h2>Informationen zum Tisch {{ selectedTable.name }}</h2>
+        <h2>Informationen zu Tisch {{ selectedTable.name }}</h2>
         <p>Kapazität: {{ selectedTable.capacity }} Personen</p>
         <p>
           Status: {{ selectedTable.status === "occupied" ? "Besetzt" : "Frei" }}
         </p>
-        <h3>Bestellungen:</h3>
-        <ul v-if="selectedTable.orders.length">
-          <li v-for="order in selectedTable.orders" :key="order">
-            {{ order }}
+        <h3>Aktuelle Bestellungen:</h3>
+        <ul v-if="selectedTable.orders && selectedTable.orders.length">
+          <li v-for="(order, index) in selectedTable.orders" :key="index">
+            <div v-for="item in order.order_details" :key="item.name">
+              {{ item.name }} - {{ item.price }} €
+            </div>
           </li>
         </ul>
         <p v-else>Keine Bestellungen für diesen Tisch</p>
@@ -49,157 +51,81 @@ import axios from "axios";
 export default {
   data() {
     return {
-      tables: [], // Array der Tische
+      tables: [], // Tische
       showPopup: false, // Popup-Status
-      selectedTable: null, // Aktuell ausgewählter Tisch
+      selectedTable: null, // Aktueller Tisch
     };
   },
   mounted() {
-    this.fetchTables(); // Daten beim Mounten abrufen
+    this.fetchTables(); // Tische laden, sobald die Seite geladen ist
   },
   methods: {
-    async fetchSessionId() {
-      try {
-        const response = await axios.get(
-          "http://localhost/reservation-api/session/get_current_session.php"
-        );
-
-        if (response.data.status === "success") {
-          return response.data.session_id || response.data.session_ids;
-        } else {
-          console.error(
-            "Fehler beim Abrufen der Session-ID:",
-            response.data.message
-          );
-          alert("Keine offene Session gefunden.");
-          return null;
-        }
-      } catch (error) {
-        console.error("Fehler bei der Anfrage zur Session-ID:", error);
-        return null;
-      }
-    },
     async fetchTables() {
       try {
         const response = await axios.get(
           "http://localhost/reservation-api/tables/get_tables_status.php"
         );
-
         if (response.data && Array.isArray(response.data)) {
           this.tables = response.data.map((table) => ({
             ...table,
-            session_id: table.session_id || null, // Sicherstellen, dass session_id korrekt gesetzt wird
-            orders: table.orders || [], // Bestellungen als leeres Array initialisieren
+            orders: table.orders.map((order) => ({
+              ...order,
+              order_details: Array.isArray(order.order_details)
+                ? order.order_details
+                : JSON.parse(order.order_details),
+            })),
           }));
           console.log("Tische erfolgreich geladen:", this.tables);
         } else {
-          console.error(
-            "Falsches Datenformat oder keine Tische:",
-            response.data
-          );
+          console.error("Ungültige Antwort:", response.data);
         }
       } catch (error) {
-        console.error("Fehler beim Abrufen der Tischdaten:", error);
+        console.error("Fehler beim Abrufen der Tische:", error);
       }
     },
-    // Popup für besetzten Tisch öffnen
     openTablePopup(table) {
-      console.log("Popup für Tisch", table.name); // Debugging-Zeile
-      console.log("Ausgewählter Tisch:", table); // Debugging-Ausgabe
-      console.log("Session-ID:", table.session_id); // Überprüfen, ob die session_id vorhanden ist
-      console.log("Session-GUID:", table.reservation_code); // Überprüfen, ob die session_id vorhanden ist
-      console.log("Bestellungen:", table.orders); // Alle Bestellungen des Tisches anzeigen
-
       this.selectedTable = table;
       this.showPopup = true;
     },
-    // Popup schließen
     closePopup() {
       this.selectedTable = null;
       this.showPopup = false;
     },
-    // Tisch einem Kunden zuweisen
     async assignTable(table) {
-      try {
-        if (!table.reservation_id) {
-          alert("Keine aktive Reservierung für diesen Tisch.");
-          return;
-        }
-        const response = await axios.post(
-          "http://localhost/reservation-api/start_session.php",
-          {
-            reservation_id: table.reservation_id,
-            table_id: table.id,
-          }
-        );
-        if (response.data.status === "success") {
-          this.fetchTables(); // Tabellen erneut laden
-          console.log(`Tisch ${table.name} erfolgreich zugewiesen.`);
-        } else {
-          console.error("Fehler beim Zuweisen des Tisches:", response.data);
-        }
-      } catch (error) {
-        console.error("Fehler beim Zuweisen des Tisches:", error);
-      }
+      // Funktion für das Zuweisen eines Tisches (falls notwendig)
+      alert(`Tisch ${table.name} ist frei und kann zugewiesen werden.`);
     },
     async generateBill() {
       try {
-        // Session-ID abrufen
-        const sessionId = await this.fetchSessionId();
-
-        if (!sessionId) {
-          return; // Keine Session gefunden
-        }
-
-        // Daten des Tisches und Bestellungen vorbereiten
-        const table = this.selectedTable;
-        const orders = table.orders;
-        if (orders.length === 0) {
+        if (!this.selectedTable || !this.selectedTable.orders.length) {
           alert("Keine Bestellungen für diesen Tisch.");
           return;
         }
 
-        // Textinhalt für die Rechnung erstellen
-        let billContent = `Rechnung für Tisch ${table.name}\n\n`;
-        billContent += `Kapazität: ${table.capacity} Personen\n`;
-        billContent += `Status: ${
-          table.status === "occupied" ? "Besetzt" : "Frei"
-        }\n\n`;
-        billContent += "Bestellungen:\n";
+        const orders = this.selectedTable.orders;
+        let billContent = `Rechnung für Tisch ${this.selectedTable.name}\n\n`;
         orders.forEach((order, index) => {
-          billContent += `${index + 1}. ${order}\n`;
+          billContent += `Bestellung ${index + 1}:\n`;
+          order.order_details.forEach((item) => {
+            billContent += ` - ${item.name}: ${item.price} €\n`;
+          });
+          billContent += `Gesamtpreis: ${order.total_price} €\n\n`;
         });
 
-        // Textdatei erstellen und herunterladen
+        // Datei erstellen und herunterladen
         const blob = new Blob([billContent], { type: "text/plain" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `rechnung_tisch_${table.name}.txt`; // Dateiname
-        link.click(); // Klick auf den Link simulieren, um den Download zu starten
-
-        // Session beenden
-        const sessionData = { session_id: sessionId };
-        const response = await axios.post(
-          "http://localhost/reservation-api/session/end_session.php",
-          sessionData
-        );
-
-        if (response.data.status === "success") {
-          alert("Session erfolgreich beendet und Rechnung heruntergeladen.");
-        } else {
-          console.error(
-            "Fehler beim Beenden der Session:",
-            response.data.message
-          );
-        }
+        link.download = `Rechnung_Tisch_${this.selectedTable.name}.txt`;
+        link.click();
+        alert("Rechnung wurde erstellt und heruntergeladen.");
       } catch (error) {
-        console.error("Fehler bei der Anfrage zum Beenden der Session:", error);
+        console.error("Fehler bei der Rechnungserstellung:", error);
       }
     },
   },
 };
 </script>
-
 <style scoped>
 .table-view {
   text-align: center;
@@ -252,5 +178,17 @@ export default {
   border-radius: 10px;
   width: 300px;
   text-align: center;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
 }
 </style>
